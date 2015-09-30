@@ -11,59 +11,84 @@ public class IntQueueChained {
 	 * - test
 	 */
 	//======================================================================
-	
-	final int NIL = -1;
-	char[] elts = new char[100];
-	int[] nexts = new int[100];
-	int firstFreeCell = 0;
-	
+
+	private final int NIL = -1;
+	private static int sizeTab = 100;
+	private static char[] elts = new char[sizeTab];
+	private static int[] nexts = new int[sizeTab];
+	private int firstFreeCell = 0;
+	private static int initTab = 0;
+	private int front;
+	private int back;
+
 	public int allocate(){
-		return NIL;
-		
+		if(firstFreeCell == NIL){
+			int newSize = sizeTab *2;
+			char[] tmpElt = new char[newSize];
+			int[] tmpNexts = new int[newSize];
+			for(int i = 0; i < sizeTab; i++){
+				tmpNexts[i] = nexts[i];
+				tmpElt[i] = elts[i];
+				if(tmpNexts[i] == NIL)
+					tmpNexts[i] = sizeTab;
+			}
+			for(int i = sizeTab; i < newSize -1; i++){
+				tmpNexts[i] = i+1;
+			}
+			tmpNexts[newSize-1] =NIL;
+			firstFreeCell = sizeTab;
+			elts = tmpElt;
+			nexts = tmpNexts;
+			sizeTab = newSize;
+		}
+		int tmp = firstFreeCell;
+		firstFreeCell = nexts[tmp];
+		nexts[tmp] =NIL;
+		return tmp;
 	}
-	
+
 	public void deallocate(int i){
-		
+		nexts[i] = firstFreeCell;
+		firstFreeCell = i;
 	}
-	
-	
-	static class QNode {
-		final int    elt;
-		QNode next = null;
-		// ----------
-		public QNode(int e) {elt=e;}
-	}
-	//======================================================================
-	private QNode front;
-	private QNode back;
 	// ------------------------------
-	public IntQueueChained() {}
-	// --------------------------
+	public IntQueueChained() {
+		this.front = -1;
+		this.back = -1;
+		if(initTab == 0){
+			initTab = 1;
+			for(int i=0; i< sizeTab-1; i++){
+				nexts[i] = i+1;
+			}
+			nexts[sizeTab-1] = NIL;
+		}
+	}
+
 	public void enqueue (int elt) {
-		QNode aux = new QNode(elt);
-		if (back==null) {
-			back = aux; front = aux;
-		} else {
-			back.next = aux;
-			back = aux;
-		} 
+		int n = allocate();
+		if(isEmpty()){
+			front = n;
+		}else{
+			nexts[back] = n;
+		}
+		nexts[n] = NIL;
+		elts[n] = (char)elt;
+		back = n;
 	}
 	// --------------------------
 	public boolean isEmpty() {
-		return back==null;
+		return front==NIL;
 	}
 	// --------------------------
 	public int consult() {
-		return front.elt;
+		return elts[front];
 	}
 	// --------------------------
 	public int dequeue() {
-		int e = front.elt;
-		if (front == back) {
-			back = null; front = null;
-		} else {
-			front = front.next;
-		}
-		return e;
+		int tmpFront = front;
+		int valReturn = elts[front];
+		front = nexts[front];
+		deallocate(tmpFront);
+		return valReturn;
 	}
 }
