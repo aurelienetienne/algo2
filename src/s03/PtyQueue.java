@@ -50,7 +50,7 @@ public class PtyQueue<E, P extends Comparable<P>> {
     // TODO A COMPLETER
 	  private E e;
 	  private P pty;
-	  private int oldElt;
+	  final private int oldElt;
 	  
 	  public HeapElt(E e, P pty){
 		  this.e = e;
@@ -60,6 +60,8 @@ public class PtyQueue<E, P extends Comparable<P>> {
 	  }
 
     @Override public int compareTo(HeapElt arg0) {
+    	if(this.pty.compareTo(arg0.pty) == 0)
+    		return Integer.compare(this.oldElt, arg0.oldElt);
     	return this.pty.compareTo(arg0.pty);
     }
   }
